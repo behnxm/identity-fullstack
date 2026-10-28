@@ -1,0 +1,45 @@
+## Build and Output
+bin/
+obj/
+out/
+dist/
+.output/
+.nuxt/
+node_modules/
+
+## IDE and Editors
+.vs/
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+!.vscode/launch.json
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+.idea/
+*.swp
+*.swo
+
+## Secrets, Keys, and Local Environment
+secrets/
+*.pem
+*.key
+*.pfx
+.env
+!.env.example
+*.local
+*.local.json
+appsettings.Local.json
+
+## Logs and Traces
+*.log
+logs/
+test-results/
+playwright-report/
+blob-report/
+playwright/.cache/
+
+## OS Files
+.DS_Store
+Thumbs.db

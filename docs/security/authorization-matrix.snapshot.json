@@ -1,0 +1,236 @@
+[
+  {
+    "Route": "/.well-known/jwks.json",
+    "HttpMethod": "GET",
+    "Policy": null,
+    "IsAnonymous": true
+  },
+  {
+    "Route": "/api/v1/admin/audit-events",
+    "HttpMethod": "GET",
+    "Policy": null,
+    "IsAnonymous": false
+  },
+  {
+    "Route": "/api/v1/admin/notes",
+    "HttpMethod": "GET",
+    "Policy": null,
+    "IsAnonymous": false
+  },
+  {
+    "Route": "/api/v1/admin/roles",
+    "HttpMethod": "GET",
+    "Policy": null,
+    "IsAnonymous": false
+  },
+  {
+    "Route": "/api/v1/admin/stats",
+    "HttpMethod": "GET",
+    "Policy": null,
+    "IsAnonymous": false
+  },
+  {
+    "Route": "/api/v1/admin/users",
+    "HttpMethod": "GET",
+    "Policy": null,
+    "IsAnonymous": false
+  },
+  {
+    "Route": "/api/v1/admin/users/{id:guid}",
+    "HttpMethod": "GET",
+    "Policy": null,
+    "IsAnonymous": false
+  },
+  {
+    "Route": "/api/v1/admin/users/{id:guid}/lock",
+    "HttpMethod": "POST",
+    "Policy": null,
+    "IsAnonymous": false
+  },
+  {
+    "Route": "/api/v1/admin/users/{id:guid}/resend-confirmation",
+    "HttpMethod": "POST",
+    "Policy": null,
+    "IsAnonymous": false
+  },
+  {
+    "Route": "/api/v1/admin/users/{id:guid}/revoke-sessions",
+    "HttpMethod": "POST",
+    "Policy": null,
+    "IsAnonymous": false
+  },
+  {
+    "Route": "/api/v1/admin/users/{id:guid}/roles",
+    "HttpMethod": "PUT",
+    "Policy": null,
+    "IsAnonymous": false
+  },
+  {
+    "Route": "/api/v1/admin/users/{id:guid}/unlock",
+    "HttpMethod": "POST",
+    "Policy": null,
+    "IsAnonymous": false
+  },
+  {
+    "Route": "/api/v1/auth/confirm-email",
+    "HttpMethod": "POST",
+    "Policy": null,
+    "IsAnonymous": true
+  },
+  {
+    "Route": "/api/v1/auth/forgot-password",
+    "HttpMethod": "POST",
+    "Policy": null,
+    "IsAnonymous": true
+  },
+  {
+    "Route": "/api/v1/auth/login",
+    "HttpMethod": "POST",
+    "Policy": null,
+    "IsAnonymous": true
+  },
+  {
+    "Route": "/api/v1/auth/login/2fa",
+    "HttpMethod": "POST",
+    "Policy": null,
+    "IsAnonymous": true
+  },
+  {
+    "Route": "/api/v1/auth/logout",
+    "HttpMethod": "POST",
+    "Policy": null,
+    "IsAnonymous": false
+  },
+  {
+    "Route": "/api/v1/auth/logout-all",
+    "HttpMethod": "POST",
+    "Policy": null,
+    "IsAnonymous": false
+  },
+  {
+    "Route": "/api/v1/auth/refresh",
+    "HttpMethod": "POST",
+    "Policy": null,
+    "IsAnonymous": true
+  },
+  {
+    "Route": "/api/v1/auth/register",
+    "HttpMethod": "POST",
+    "Policy": null,
+    "IsAnonymous": true
+  },
+  {
+    "Route": "/api/v1/auth/resend-confirmation",
+    "HttpMethod": "POST",
+    "Policy": null,
+    "IsAnonymous": true
+  },
+  {
+    "Route": "/api/v1/auth/reset-password",
+    "HttpMethod": "POST",
+    "Policy": null,
+    "IsAnonymous": true
+  },
+  {
+    "Route": "/api/v1/health/live",
+    "HttpMethod": "GET",
+    "Policy": null,
+    "IsAnonymous": true
+  },
+  {
+    "Route": "/api/v1/health/ready",
+    "HttpMethod": "GET",
+    "Policy": null,
+    "IsAnonymous": true
+  },
+  {
+    "Route": "/api/v1/me/",
+    "HttpMethod": "GET",
+    "Policy": null,
+    "IsAnonymous": false
+  },
+  {
+    "Route": "/api/v1/me/policies",
+    "HttpMethod": "GET",
+    "Policy": null,
+    "IsAnonymous": false
+  },
+  {
+    "Route": "/api/v1/me/profile",
+    "HttpMethod": "PUT",
+    "Policy": null,
+    "IsAnonymous": false
+  },
+  {
+    "Route": "/api/v1/me/security/2fa/disable",
+    "HttpMethod": "POST",
+    "Policy": null,
+    "IsAnonymous": false
+  },
+  {
+    "Route": "/api/v1/me/security/2fa/enable",
+    "HttpMethod": "POST",
+    "Policy": null,
+    "IsAnonymous": false
+  },
+  {
+    "Route": "/api/v1/me/security/2fa/recovery-codes",
+    "HttpMethod": "POST",
+    "Policy": null,
+    "IsAnonymous": false
+  },
+  {
+    "Route": "/api/v1/me/security/2fa/setup",
+    "HttpMethod": "GET",
+    "Policy": null,
+    "IsAnonymous": false
+  },
+  {
+    "Route": "/api/v1/me/security/password",
+    "HttpMethod": "POST",
+    "Policy": null,
+    "IsAnonymous": false
+  },
+  {
+    "Route": "/api/v1/me/sessions",
+    "HttpMethod": "GET",
+    "Policy": null,
+    "IsAnonymous": false
+  },
+  {
+    "Route": "/api/v1/me/sessions/{id:guid}",
+    "HttpMethod": "DELETE",
+    "Policy": null,
+    "IsAnonymous": false
+  },
+  {
+    "Route": "/api/v1/notes/",
+    "HttpMethod": "GET",
+    "Policy": null,
+    "IsAnonymous": false
+  },
+  {
+    "Route": "/api/v1/notes/",
+    "HttpMethod": "POST",
+    "Policy": null,
+    "IsAnonymous": false
+  },
+  {
+    "Route": "/api/v1/notes/{id:guid}",
+    "HttpMethod": "GET",
+    "Policy": null,
+    "IsAnonymous": false
+  },
+  {
+    "Route": "/api/v1/notes/{id:guid}",
+    "HttpMethod": "PUT",
+    "Policy": null,
+    "IsAnonymous": false
+  },
+  {
+    "Route": "/api/v1/notes/{id:guid}",
+    "HttpMethod": "DELETE",
+    "Policy": null,
+    "IsAnonymous": false
+  }
+]

@@ -1,0 +1,38 @@
+<Project>
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <LangVersion>14.0</LangVersion>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <AnalysisLevel>latest-recommended</AnalysisLevel>
+    <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+
+    <!-- NuGet security vulnerability auditing -->
+    <NuGetAudit>true</NuGetAudit>
+    <NuGetAuditMode>all</NuGetAuditMode>
+    <WarningsAsErrors>$(WarningsAsErrors);NU1901;NU1902;NU1903;NU1904</WarningsAsErrors>
+
+    <!-- Justified suppressions:
+         CA1848 / CA1873: LoggerMessage source-generator delegates are excessive for standard API logging
+         CA1305: Specify IFormatProvider for simple string conversions
+         CA1859: Change return type of method from interface to concrete type (TypedResults / IResult)
+         CA1711: Identifiers should not have reserved suffix (e.g. EmailQueue)
+         CA1716: Identifiers should not match language keywords (e.g. 'Me' namespace for /me feature)
+         CA1805: Member initialized to default value
+         CA1861: Prefer static readonly fields over array arguments (triggered in EF Core auto-generated migrations)
+    -->
+    <NoWarn>$(NoWarn);CA1848;CA1873;CA1305;CA1859;CA1711;CA1716;CA1805;CA1861</NoWarn>
+  </PropertyGroup>
+
+  <!-- Enable XML docs for API project while keeping test projects clean -->
+  <PropertyGroup Condition="'$(IsTestProject)' != 'true' and !$(MSBuildProjectName.EndsWith('Tests'))">
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(IsTestProject)' == 'true' or $(MSBuildProjectName.EndsWith('Tests'))">
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    <NoWarn>$(NoWarn);CS1591;CA1707;xUnit1051</NoWarn>
+  </PropertyGroup>
+</Project>
