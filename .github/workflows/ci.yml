@@ -19,8 +19,8 @@ jobs:
         image: postgres:17.11-alpine
         env:
           POSTGRES_DB: identity_test
-          POSTGRES_USER: identity_app
-          POSTGRES_PASSWORD: test_password_123!
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
         ports:
           - 5432:5432
         options: >-
@@ -54,7 +54,8 @@ jobs:
 
       - name: Run Unit, Architecture & Integration Tests
         env:
-          ConnectionStrings__DefaultConnection: Host=127.0.0.1;Port=5432;Database=identity_test;Username=identity_app;Password=test_password_123!
+          ConnectionStrings__Database: Host=127.0.0.1;Port=5432;Database=identity_test;Username=postgres;Password=postgres;Ssl Mode=Disable;
+          ConnectionStrings__DefaultConnection: Host=127.0.0.1;Port=5432;Database=identity_test;Username=postgres;Password=postgres;Ssl Mode=Disable;
           Email__SmtpHost: 127.0.0.1
           Email__SmtpPort: 1025
         run: dotnet test api/Identity.slnx --configuration Release --no-build --output Normal

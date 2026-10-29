@@ -66,8 +66,21 @@ public sealed class CapturingLogProvider : ILoggerProvider, ILogger
 
 public class CustomWebApplicationFactory : WebApplicationFactory<Program>, IAsyncLifetime
 {
+    private static string ResolveDefaultConnectionString()
+    {
+        var env = Environment.GetEnvironmentVariable("ConnectionStrings__Database")
+            ?? Environment.GetEnvironmentVariable("ConnectionStrings__DefaultConnection");
+
+        if (!string.IsNullOrWhiteSpace(env))
+        {
+            return env;
+        }
+
+        return "Host=127.0.0.1;Port=5432;Database=identity_test;Username=postgres;Password=postgres;Ssl Mode=Disable;";
+    }
+
     private PostgreSqlContainer? _postgresContainer;
-    private string _connectionString = "Host=127.0.0.1;Port=5432;Database=identity_test;Username=postgres;Password=postgres;Ssl Mode=Disable;";
+    private string _connectionString = ResolveDefaultConnectionString();
 
     public FakeTimeProvider TimeProvider { get; } = new(DateTimeOffset.UtcNow);
     public CapturingEmailSender EmailSender { get; } = new();
@@ -75,25 +88,35 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>, IAsyn
 
     public async ValueTask InitializeAsync()
     {
-        // Check if Testcontainers can be used (if Docker daemon is reachable)
-        var useTestcontainers = Environment.GetEnvironmentVariable("USE_TESTCONTAINERS") == "true";
-        if (useTestcontainers)
-        {
-            try
-            {
-                _postgresContainer = new PostgreSqlBuilder("postgres:17.11-alpine")
-                    .WithDatabase("identity_test")
-                    .WithUsername("postgres")
-                    .WithPassword("postgres")
-                    .Build();
+        var envConn = Environment.GetEnvironmentVariable("ConnectionStrings__Database")
+            ?? Environment.GetEnvironmentVariable("ConnectionStrings__DefaultConnection");
 
-                await _postgresContainer.StartAsync();
-                _connectionString = _postgresContainer.GetConnectionString();
-            }
-            catch
+        if (!string.IsNullOrWhiteSpace(envConn))
+        {
+            _connectionString = envConn;
+        }
+        else
+        {
+            // Check if Testcontainers can be used (if Docker daemon is reachable)
+            var useTestcontainers = Environment.GetEnvironmentVariable("USE_TESTCONTAINERS") == "true";
+            if (useTestcontainers)
             {
-                // Fall back to local PostgreSQL if Docker is not active
-                _connectionString = "Host=127.0.0.1;Port=5432;Database=identity_test;Username=postgres;Password=postgres;Ssl Mode=Disable;";
+                try
+                {
+                    _postgresContainer = new PostgreSqlBuilder("postgres:17.11-alpine")
+                        .WithDatabase("identity_test")
+                        .WithUsername("postgres")
+                        .WithPassword("postgres")
+                        .Build();
+
+                    await _postgresContainer.StartAsync();
+                    _connectionString = _postgresContainer.GetConnectionString();
+                }
+                catch
+                {
+                    // Fall back to local PostgreSQL if Docker is not active
+                    _connectionString = "Host=127.0.0.1;Port=5432;Database=identity_test;Username=postgres;Password=postgres;Ssl Mode=Disable;";
+                }
             }
         }
 
