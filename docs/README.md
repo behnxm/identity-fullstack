@@ -316,9 +316,9 @@ IdentityFullstack/
 │   │   ├── middleware/csrf.ts              # CSRF protection on mutating requests
 │   │   └── utils/session.ts                # Sealed cookie session manager & mutex token refresher
 │   └── tests/                              # 30 Vitest tests (BFF proxy, CSRF, sessions, auth pages)
-├── deploy/                                 # Production deployment configurations
-│   ├── docker-compose.yml                  # Production compose topology (API, Web, DB, Mailpit, Nginx)
-│   └── nginx/nginx.conf                    # Edge reverse proxy configuration
+├── compose.yaml                            # Canonical Compose specification (Postgres, Mailpit, API, Web, Caddy)
+├── deploy/                                 # Production edge reverse proxy configuration
+│   └── Caddyfile                           # Edge TLS reverse proxy rules
 ├── docs/                                   # Architecture Decision Records (ADRs) & Threat Models
 │   ├── adr/                                # 18 ADRs covering all architectural decisions
 │   └── security/                           # OWASP mapping, authorization matrix, threat model
@@ -349,7 +349,7 @@ Start PostgreSQL (port 5432) and Mailpit (SMTP port 1025, Web UI port 8025):
 ```powershell
 docker compose up -d postgres mailpit
 ```
-*(Alternatively, you can run `docker compose -f deploy/docker-compose.yml up -d postgres mailpit`, or if running under WSL2 Debian without Docker, start services via `service postgresql start && service mailpit start`)*.
+*(If running under WSL2 Debian without Docker, start services via `service postgresql start && service mailpit start`)*.
 
 ### Step 3: Run the Backend API
 ```powershell
