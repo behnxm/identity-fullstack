@@ -6,7 +6,9 @@ definePageMeta({
 
 const route = useRoute()
 const router = useRouter()
+const toast = useToast()
 const { login2Fa } = useBff()
+const { session } = useUserSession()
 const { resolveLandingPath, safeRedirect } = useCapabilities()
 
 const code = ref('')
@@ -17,7 +19,7 @@ const mfaToken = ref<string | null>(null)
 
 onMounted(() => {
   if (typeof window !== 'undefined') {
-    const token = sessionStorage.getItem('pending_mfa_token')
+    const token = sessionStorage.getItem('pending_mfa_token') || (session.value as any)?.challengeToken
     if (!token) {
       router.replace('/login')
       return
@@ -27,7 +29,8 @@ onMounted(() => {
 })
 
 const handleSubmit = async () => {
-  if (!mfaToken.value) {
+  const activeToken = mfaToken.value || (session.value as any)?.challengeToken
+  if (!activeToken) {
     router.replace('/login')
     return
   }
@@ -37,7 +40,8 @@ const handleSubmit = async () => {
 
   try {
     const res = await login2Fa({
-      mfaToken: mfaToken.value,
+      challengeToken: activeToken,
+      mfaToken: activeToken,
       code: code.value.trim(),
       isRecoveryCode: isRecovery.value
     })
@@ -45,6 +49,12 @@ const handleSubmit = async () => {
     if (typeof window !== 'undefined') {
       sessionStorage.removeItem('pending_mfa_token')
     }
+
+    toast.add({
+      title: 'Welcome back',
+      description: 'Two-factor authentication verified.',
+      color: 'success'
+    })
 
     const fallback = resolveLandingPath(res.policies)
     const target = safeRedirect(route.query.redirect as string, fallback)

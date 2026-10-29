@@ -27,9 +27,10 @@ const handleLogin = async () => {
       rememberMe: rememberMe.value
     })
 
-    if (res.status === 'mfa_required') {
-      if (typeof window !== 'undefined' && res.mfaToken) {
-        sessionStorage.setItem('pending_mfa_token', res.mfaToken)
+    if (res.status === 'mfa_required' || res.status === 'two_factor_required') {
+      const challenge = res.challengeToken || res.mfaToken
+      if (typeof window !== 'undefined' && challenge) {
+        sessionStorage.setItem('pending_mfa_token', challenge)
       }
       await router.push({
         path: '/login/two-factor',

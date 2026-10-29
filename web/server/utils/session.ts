@@ -33,13 +33,14 @@ export function resolveLandingPath(policies: Record<string, { allowed: boolean; 
 }
 
 export async function applyAuthResponse(event: H3Event, response: AuthApiResponse) {
-  if (response.status === 'mfa_required' || !response.accessToken) {
+  if (response.status === 'mfa_required' || response.status === 'two_factor_required' || !response.accessToken) {
     await setUserSession(event, {
       challengeToken: response.challengeToken
     })
     return {
       status: 'mfa_required',
-      challengeToken: response.challengeToken
+      challengeToken: response.challengeToken,
+      mfaToken: response.challengeToken
     }
   }
 
