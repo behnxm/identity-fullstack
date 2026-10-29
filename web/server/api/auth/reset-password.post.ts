@@ -3,7 +3,7 @@ import { z } from 'zod'
 
 const ResetPasswordSchema = z.object({
   userId: z.string().uuid(),
-  token: z.string().min(1),
+  token: z.string().min(1).transform(t => t.trim().replace(/ /g, '+')),
   newPassword: z.string().min(12, 'Password must be at least 12 characters').max(128)
 })
 

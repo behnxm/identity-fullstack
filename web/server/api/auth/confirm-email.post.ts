@@ -3,7 +3,7 @@ import { z } from 'zod'
 
 const ConfirmEmailSchema = z.object({
   userId: z.string().uuid(),
-  token: z.string().min(1)
+  token: z.string().min(1).transform(t => t.trim().replace(/ /g, '+'))
 })
 
 export default defineEventHandler(async (event) => {

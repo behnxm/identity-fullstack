@@ -23,15 +23,25 @@ onMounted(() => {
     const rawHash = window.location.hash.startsWith('#')
       ? window.location.hash.substring(1)
       : window.location.hash
-    const params = new URLSearchParams(rawHash)
-    token.value = params.get('token') || ''
-    if (!userId.value) {
-      userId.value = params.get('userId') || ''
+
+    const tokenMatch = rawHash.match(/(?:^|&)token=([^&]*)/)
+    if (tokenMatch && tokenMatch[1]) {
+      token.value = decodeURIComponent(tokenMatch[1].replace(/\+/g, '%2B'))
+    }
+
+    const userMatch = rawHash.match(/(?:^|&)userId=([^&]*)/)
+    if (userMatch && userMatch[1] && !userId.value) {
+      userId.value = decodeURIComponent(userMatch[1])
     }
   }
 
   if (!token.value && route.query.token) {
-    token.value = route.query.token as string
+    token.value = String(route.query.token)
+  }
+
+  // Normalize: ensure any space converted from '+' in Base64 is restored
+  if (token.value && token.value.includes(' ')) {
+    token.value = token.value.replace(/ /g, '+')
   }
 
   if (!userId.value || !token.value) {

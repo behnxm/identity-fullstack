@@ -18,16 +18,26 @@ onMounted(async () => {
     const rawHash = window.location.hash.startsWith('#')
       ? window.location.hash.substring(1)
       : window.location.hash
-    const params = new URLSearchParams(rawHash)
-    token = params.get('token') || ''
-    if (!userId) {
-      userId = params.get('userId') || ''
+
+    const tokenMatch = rawHash.match(/(?:^|&)token=([^&]*)/)
+    if (tokenMatch && tokenMatch[1]) {
+      token = decodeURIComponent(tokenMatch[1].replace(/\+/g, '%2B'))
+    }
+
+    const userMatch = rawHash.match(/(?:^|&)userId=([^&]*)/)
+    if (userMatch && userMatch[1] && !userId) {
+      userId = decodeURIComponent(userMatch[1])
     }
   }
 
   // Fallback to query param if hash is empty
   if (!token && route.query.token) {
-    token = route.query.token as string
+    token = String(route.query.token)
+  }
+
+  // Normalize: ensure any space converted from '+' in Base64 is restored
+  if (token && token.includes(' ')) {
+    token = token.replace(/ /g, '+')
   }
 
   if (!userId || !token) {

@@ -6,6 +6,7 @@ definePageMeta({
 
 const route = useRoute()
 const router = useRouter()
+const toast = useToast()
 const { login } = useBff()
 const { resolveLandingPath, safeRedirect } = useCapabilities()
 
@@ -38,6 +39,11 @@ const handleLogin = async () => {
     }
 
     // Standard login complete
+    toast.add({
+      title: 'Welcome back',
+      description: 'Signed in successfully.',
+      color: 'success'
+    })
     const fallback = resolveLandingPath(res.policies)
     const target = safeRedirect(route.query.redirect as string, fallback)
     await router.push(target)
@@ -66,6 +72,23 @@ const prefill = (demoEmail: string) => {
           create a new account
         </NuxtLink>
       </p>
+    </div>
+
+    <!-- Registration Success Alert Banner -->
+    <div
+      v-if="route.query.registered"
+      class="mb-5 p-3 rounded-lg bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-900 text-xs text-emerald-800 dark:text-emerald-300 font-medium flex items-start gap-2.5"
+      role="status"
+    >
+      <span class="text-base leading-none">✉</span>
+      <div>
+        <p class="font-bold">Account created successfully!</p>
+        <p class="mt-1 text-neutral-600 dark:text-neutral-300">
+          We sent a verification link to your email. In local development, check
+          <a href="http://localhost:8025" target="_blank" rel="noopener noreferrer" class="text-emerald-600 dark:text-emerald-400 font-semibold underline">Mailpit (localhost:8025)</a>
+          to confirm your email before signing in.
+        </p>
+      </div>
     </div>
 
     <!-- Error Alert -->

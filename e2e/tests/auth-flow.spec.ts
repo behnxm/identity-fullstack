@@ -18,9 +18,9 @@ test.describe('End-to-End Authentication & Email Lifecycle', () => {
     await page.locator('#confirmPassword').fill(testPassword)
     await page.getByRole('button', { name: /register/i }).click()
 
-    // 3. Verify redirection to check-email screen
-    await expect(page).toHaveURL(/.*\/register\/check-email/)
-    await expect(page.getByRole('heading', { name: /check your email/i })).toBeVisible()
+    // 3. Verify redirection to login screen with registration confirmation
+    await expect(page).toHaveURL(/.*\/login\?registered=1/)
+    await expect(page.getByRole('heading', { name: /sign in to your account/i })).toBeVisible()
 
     // 4. Query Mailpit API for the dispatched verification link
     let confirmUrl: string | null = null

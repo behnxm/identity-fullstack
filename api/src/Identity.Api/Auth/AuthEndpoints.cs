@@ -239,7 +239,14 @@ public static class AuthEndpoints
                 context.Request.Path);
         }
 
-        var result = await userManager.ConfirmEmailAsync(user, request.Token);
+        var token = request.Token?.Trim() ?? string.Empty;
+        // Normalize token: Base64 tokens never contain spaces; if an intermediary URL parser converted '+' to ' ', restore '+'
+        if (token.Contains(' '))
+        {
+            token = token.Replace(' ', '+');
+        }
+
+        var result = await userManager.ConfirmEmailAsync(user, token);
         if (!result.Succeeded)
         {
             return ApiProblemDetails.CreateResult(
@@ -700,7 +707,14 @@ public static class AuthEndpoints
                 context.Request.Path);
         }
 
-        var result = await userManager.ResetPasswordAsync(user, request.Token, request.NewPassword);
+        var token = request.Token?.Trim() ?? string.Empty;
+        // Normalize token: Base64 tokens never contain spaces; if an intermediary URL parser converted '+' to ' ', restore '+'
+        if (token.Contains(' '))
+        {
+            token = token.Replace(' ', '+');
+        }
+
+        var result = await userManager.ResetPasswordAsync(user, token, request.NewPassword);
         if (!result.Succeeded)
         {
             return ApiProblemDetails.CreateResult(

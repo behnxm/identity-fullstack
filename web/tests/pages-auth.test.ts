@@ -28,11 +28,11 @@ describe('Static Security Audit: Page Route Protection', () => {
     const publicPages = [
       'index.vue',
       'login.vue',
+      'login\\index.vue',
+      'login/index.vue',
       'login\\two-factor.vue',
       'login/two-factor.vue',
       'register.vue',
-      'register\\check-email.vue',
-      'register/check-email.vue',
       'confirm-email.vue',
       'forgot-password.vue',
       'reset-password.vue',

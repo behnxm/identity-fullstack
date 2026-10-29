@@ -5,6 +5,7 @@ definePageMeta({
 })
 
 const router = useRouter()
+const toast = useToast()
 const { register } = useBff()
 
 const displayName = ref('')
@@ -34,9 +35,15 @@ const handleRegister = async () => {
       password: password.value
     })
 
+    toast.add({
+      title: 'Registration completed',
+      description: 'Your account has been created. Please check your email to activate your account.',
+      color: 'success'
+    })
+
     await router.push({
-      path: '/register/check-email',
-      query: { email: email.value.trim() }
+      path: '/login',
+      query: { registered: '1' }
     })
   } catch (err: any) {
     errorMessage.value = err?.data?.detail || err?.data?.title || err?.message || 'Registration failed.'

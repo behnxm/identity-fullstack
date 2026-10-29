@@ -95,6 +95,37 @@ public class AuthLifecycleIntegrationTests(CustomWebApplicationFactory factory)
     }
 
     [Fact]
+    public async Task ConfirmEmail_WithTokenContainingUrlSpaces_NormalizesAndConfirmsAccount()
+    {
+        await factory.ResetDatabaseAsync();
+        var email = "space_token@example.com";
+        await _client.PostAsJsonAsync("/api/v1/auth/register", new RegisterRequest
+        {
+            Email = email,
+            Password = "SecurePassword!1234",
+            DisplayName = "Space Token Test"
+        });
+
+        var sentEmail = factory.EmailSender.GetLastEmailTo(email)!;
+        var uri = ExtractUriFromEmail(sentEmail.PlainTextContent);
+        var query = System.Web.HttpUtility.ParseQueryString(uri.Query);
+        var userId = Guid.Parse(query["userId"]!);
+        var token = uri.Fragment.Replace("#token=", string.Empty);
+        token = WebUtility.UrlDecode(token);
+
+        // Simulate an intermediary or client URL parser decoding '+' as a literal space ' '
+        var tokenWithSpaces = token.Replace('+', ' ');
+
+        var confirmResponse = await _client.PostAsJsonAsync("/api/v1/auth/confirm-email", new ConfirmEmailRequest
+        {
+            UserId = userId,
+            Token = tokenWithSpaces
+        });
+
+        confirmResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
+    }
+
+    [Fact]
     public async Task Login_InvalidCredentials_ReturnsGeneric401_ForBothMissingAndWrongPassword()
     {
         await factory.ResetDatabaseAsync();
