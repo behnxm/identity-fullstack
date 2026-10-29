@@ -58,10 +58,10 @@ flowchart TD
 
 ### Core Security Guarantees
 1. **The Browser Never Touches a Token**: The browser never sees or stores a JWT access token or a refresh token.
-2. **Sealed Cookie Storage**: Nuxt's server unseals and decrypts session data from an `httpOnly`, `Secure`, `SameSite=Lax` cookie prefixed with `__Host-` ([web/server/utils/session.ts](file:///d:/Projects/Code/ant/IdentityFullstack/web/server/utils/session.ts)). Client-side JavaScript cannot read or extract this cookie.
+2. **Sealed Cookie Storage**: Nuxt's server unseals and decrypts session data from an `httpOnly`, `Secure`, `SameSite=Lax` cookie prefixed with `__Host-` ([web/server/utils/session.ts](../web/server/utils/session.ts)). Client-side JavaScript cannot read or extract this cookie.
 3. **No Direct Internet Exposure for the API**: The ASP.NET Core API has **zero CORS configuration** because browsers never talk to it directly. It communicates exclusively with the Nuxt BFF over an internal network.
 4. **Transparent Proxying & Single-Flight Mutex**:
-   When the browser makes a request to `/api/v1/notes`, the Nuxt BFF proxy ([web/server/api/v1/[...path].ts](file:///d:/Projects/Code/ant/IdentityFullstack/web/server/api/v1/%5B...path%5D.ts)):
+   When the browser makes a request to `/api/v1/notes`, the Nuxt BFF proxy ([web/server/api/v1/[...path].ts](../web/server/api/v1/[...path].ts)):
    - Unseals the encrypted session cookie.
    - Checks if the access token has expired.
    - If expired, executes a **single-flight mutex refresh**: concurrent requests coalesce onto a single refresh call, acquiring a new token pair and updating the cookie before fulfilling all queued requests.
@@ -96,7 +96,7 @@ Understanding the separation between authentication and authorization is the fou
 
 ### ASP.NET Core Identity Internals
 ASP.NET Core Identity provides the underlying user store and security infrastructure:
-* **`AppUser` ([Domain/Entities/AppUser.cs](file:///d:/Projects/Code/ant/IdentityFullstack/api/src/Identity.Api/Domain/Entities/AppUser.cs))**: Extends `IdentityUser<Guid>`. Maintains account metadata including `EmailConfirmed`, `TwoFactorEnabled`, `LockoutEnd`, and `AccessFailedCount`.
+* **`AppUser` ([Persistence/Entities/AppUser.cs](../api/src/Identity.Api/Persistence/Entities/AppUser.cs))**: Extends `IdentityUser<Guid>`. Maintains account metadata including `EmailConfirmed`, `TwoFactorEnabled`, `LockoutEnd`, and `AccessFailedCount`.
 * **Password Hashing**: Managed by `PasswordHasher<AppUser>`, utilizing PBKDF2 with HMAC-SHA256/SHA-512, 100,000 iterations, and a cryptographically random salt. Plaintext passwords never touch persistence or memory beyond validation.
 * **`SecurityStamp`**: An opaque string regenerated whenever an account's security posture changes (password reset, email verification, 2FA enrollment). The API verifies that the security stamp inside an active session matches the user's current security stamp; if not, all outstanding tokens are immediately rejected.
 
@@ -148,7 +148,7 @@ graph LR
     Token --> Policies
 ```
 
-1. **Permissions are Atomic Capabilities**: Defined in [Common/Constants/Permissions.cs](file:///d:/Projects/Code/ant/IdentityFullstack/api/src/Identity.Api/Common/Constants/Permissions.cs):
+1. **Permissions are Atomic Capabilities**: Defined in [Common/Constants/Permissions.cs](../api/src/Identity.Api/Common/Constants/Permissions.cs):
    * `profile.manage`: Update user profile and change password.
    * `notes.manage.own`: Create, read, and delete personal notes.
    * `users.read`: View user directory.
@@ -156,10 +156,10 @@ graph LR
    * `users.manage`: Lock, unlock, and manage user accounts.
    * `notes.moderate`: View and delete any note across the system.
 2. **Roles are Permission Bundles**: Roles exist solely to assign sets of permissions to users via `AspNetRoleClaims`.
-3. **Architecture Tests Enforce the Rule**: A NetArchTest rule ([Identity.ArchitectureTests](file:///d:/Projects/Code/ant/IdentityFullstack/api/tests/Identity.ArchitectureTests/ArchitectureTests.cs)) scans the compiled API assembly and fails the build if any endpoint attempts to use `[Authorize(Roles = "...")]`.
+3. **Architecture Tests Enforce the Rule**: A NetArchTest rule ([Identity.ArchitectureTests](../api/tests/Identity.ArchitectureTests/ArchitectureTests.cs)) scans the compiled API assembly and fails the build if any endpoint attempts to use `[Authorize(Roles = "...")]`.
 
 ### Resource-Based Authorization
-Checking whether a user has permission to touch *a specific record* cannot be done with endpoint attributes alone. We use ASP.NET Core's `IAuthorizationService` with custom resource handlers ([Security/Authorization/NoteAuthorizationHandler.cs](file:///d:/Projects/Code/ant/IdentityFullstack/api/src/Identity.Api/Security/Authorization/NoteAuthorizationHandler.cs)):
+Checking whether a user has permission to touch *a specific record* cannot be done with endpoint attributes alone. We use ASP.NET Core's `IAuthorizationService` with custom resource handlers ([Security/Authorization/NoteAccessAuthorizationHandler.cs](../api/src/Identity.Api/Security/Authorization/NoteAccessAuthorizationHandler.cs)):
 * When accessing `Note #104`, the endpoint retrieves the note and evaluates:
   ```csharp
   var result = await authorizationService.AuthorizeAsync(User, note, NoteOperations.Update);
@@ -178,7 +178,7 @@ Instead, upon session initialization, Nuxt fetches `GET /api/v1/me/policies`. Th
   "users.manage": { "allowed": false, "reason": "missing_permission" }
 }
 ```
-The frontend [`usePolicies()`](file:///d:/Projects/Code/ant/IdentityFullstack/web/app/composables/usePolicies.ts) composable provides a reactive `can('panel.admin')` helper. The UI adjusts navigation items, action buttons, and panels based strictly on the server's authoritative policy decisions.
+The frontend [`useCapabilities()`](../web/app/composables/useCapabilities.ts) composable provides a reactive `can('panel.admin')` helper. The UI adjusts navigation items, action buttons, and panels based strictly on the server's authoritative policy decisions.
 
 ---
 
@@ -254,13 +254,13 @@ When they successfully complete the TOTP challenge, a fresh token is issued with
   "amr": ["pwd", "mfa"]
 }
 ```
-Policies like `panel.admin` and administrative moderation operations evaluate this claim via the custom `MfaRequirement` ([Security/Authorization/MfaRequirement.cs](file:///d:/Projects/Code/ant/IdentityFullstack/api/src/Identity.Api/Security/Authorization/MfaRequirement.cs)).
+Policies like `panel.admin` and administrative moderation operations evaluate this claim via the custom `MfaRequirement` ([Security/Authorization/MfaRequirement.cs](../api/src/Identity.Api/Security/Authorization/MfaRequirement.cs)).
 
 ### Forced MFA Enrollment Route Guard
 When an administrative user without MFA enabled logs in, the `panel.admin` policy returns `{ "allowed": false, "reason": "mfa_required" }`.
-Nuxt's global router middleware ([web/app/middleware/auth.global.ts](file:///d:/Projects/Code/ant/IdentityFullstack/web/app/middleware/auth.global.ts)) detects this condition and automatically redirects the user to:
+Nuxt's global router middleware ([web/app/middleware/auth.global.ts](../web/app/middleware/auth.global.ts)) detects this condition and automatically redirects the user to:
 ```text
-/auth/mfa-enroll?required_mfa=1
+/app/security?required_mfa=1
 ```
 The user is guided through the QR enrollment flow and cannot access the admin console until their second factor is confirmed and verified.
 
@@ -270,13 +270,13 @@ The user is guided through the QR enrollment flow and cannot access the admin co
 
 | Threat | Mitigation Strategy | Location in Codebase |
 |---|---|---|
-| **Cross-Site Request Forgery (CSRF)** | Multi-layer check: `__Host-` cookie attributes + custom header check (`X-Requested-With`) + `Sec-Fetch-Site` verification. | [web/server/middleware/csrf.ts](file:///d:/Projects/Code/ant/IdentityFullstack/web/server/middleware/csrf.ts) |
-| **Token Leakage via HTTP Referer** | Email verification and reset tokens are delivered in the **URL hash fragment (`#token=...`)**, not in query parameters. Fragments are never transmitted in HTTP request or Referer headers. | [web/app/pages/auth/verify-email.vue](file:///d:/Projects/Code/ant/IdentityFullstack/web/app/pages/auth/verify-email.vue) |
-| **User Enumeration Attacks** | Generic constant-time HTTP responses for `/register`, `/forgot-password`, and `/resend-verification`. The API returns identical responses regardless of whether the email exists. | [api/src/Identity.Api/Endpoints/AuthEndpoints.cs](file:///d:/Projects/Code/ant/IdentityFullstack/api/src/Identity.Api/Endpoints/AuthEndpoints.cs) |
-| **Brute-Force & Denial of Service** | ASP.NET Core partitioned rate limiting with fixed-window buckets keyed by client IP and user identity. | [api/src/Identity.Api/Program.cs](file:///d:/Projects/Code/ant/IdentityFullstack/api/src/Identity.Api/Program.cs) |
-| **Insecure Direct Object References (IDOR)** | Entity ownership validation via `IAuthorizationService.AuthorizeAsync` on every resource mutation. | [api/src/Identity.Api/Endpoints/NotesEndpoints.cs](file:///d:/Projects/Code/ant/IdentityFullstack/api/src/Identity.Api/Endpoints/NotesEndpoints.cs) |
-| **Information Disclosure in Errors** | Custom `IAuthorizationMiddlewareResultHandler` emitting RFC 9457 `ProblemDetails` (`auth.forbidden`, `auth.mfa_required`) without revealing missing permission keys. | [api/src/Identity.Api/Middleware/ProblemDetailsResultHandler.cs](file:///d:/Projects/Code/ant/IdentityFullstack/api/src/Identity.Api/Middleware/ProblemDetailsResultHandler.cs) |
-| **Tamper-Evident Security Auditing** | Structured security event emission recording timestamp, IP, User-Agent, user ID, event type, and outcome. | [api/src/Identity.Api/Domain/Entities/AuditEvent.cs](file:///d:/Projects/Code/ant/IdentityFullstack/api/src/Identity.Api/Domain/Entities/AuditEvent.cs) |
+| **Cross-Site Request Forgery (CSRF)** | Multi-layer check: `__Host-` cookie attributes + custom header check (`X-Requested-With`) + `Sec-Fetch-Site` verification. | [web/server/middleware/csrf.ts](../web/server/middleware/csrf.ts) |
+| **Token Leakage via HTTP Referer** | Email verification and reset tokens are delivered in the **URL hash fragment (`#token=...`)**, not in query parameters. Fragments are never transmitted in HTTP request or Referer headers. | [web/app/pages/confirm-email.vue](../web/app/pages/confirm-email.vue) |
+| **User Enumeration Attacks** | Generic constant-time HTTP responses for `/register`, `/forgot-password`, and `/resend-verification`. The API returns identical responses regardless of whether the email exists. | [api/src/Identity.Api/Auth/AuthEndpoints.cs](../api/src/Identity.Api/Auth/AuthEndpoints.cs) |
+| **Brute-Force & Denial of Service** | ASP.NET Core partitioned rate limiting with fixed-window buckets keyed by client IP and user identity. | [api/src/Identity.Api/Program.cs](../api/src/Identity.Api/Program.cs) |
+| **Insecure Direct Object References (IDOR)** | Entity ownership validation via `IAuthorizationService.AuthorizeAsync` on every resource mutation. | [api/src/Identity.Api/Notes/NotesEndpoints.cs](../api/src/Identity.Api/Notes/NotesEndpoints.cs) |
+| **Information Disclosure in Errors** | Custom `IAuthorizationMiddlewareResultHandler` emitting RFC 9457 `ProblemDetails` (`auth.forbidden`, `auth.mfa_required`) without revealing missing permission keys. | [api/src/Identity.Api/Security/Authorization/SecurityAuthorizationMiddlewareResultHandler.cs](../api/src/Identity.Api/Security/Authorization/SecurityAuthorizationMiddlewareResultHandler.cs) |
+| **Tamper-Evident Security Auditing** | Structured security event emission recording timestamp, IP, User-Agent, user ID, event type, and outcome. | [api/src/Identity.Api/Persistence/Entities/SecurityEvent.cs](../api/src/Identity.Api/Persistence/Entities/SecurityEvent.cs) |
 
 ---
 
@@ -286,13 +286,14 @@ The user is guided through the QR enrollment flow and cannot access the admin co
 IdentityFullstack/
 ├── api/                                    # ASP.NET Core 10 Web API (.NET 10 LTS / C# 14)
 │   ├── src/Identity.Api/
-│   │   ├── Common/                         # Permissions, Policies, Options, ProblemDetails
-│   │   ├── Domain/Entities/                # AppUser, AppRole, Note, RefreshToken, AuditEvent
+│   │   ├── Admin/                          # Admin endpoints (users, audit log, roles)
+│   │   ├── Auth/                           # Auth endpoints (login, register, refresh, MFA)
+│   │   ├── Common/                         # Permissions, Policies, Roles, ProblemDetails
 │   │   ├── Email/                          # Channel-based async mail queue + Mailpit integration
-│   │   ├── Endpoints/                      # Minimal APIs: Auth, Me, Notes, Admin, System
-│   │   ├── Middleware/                     # RFC 9457 handler, session validator, proxy headers
-│   │   ├── Persistence/                    # EF Core 10 AppDbContext & PostgreSQL migrations
-│   │   ├── Security/                       # ES256 key manager, JWT factory, session store, TOTP
+│   │   ├── Me/                             # Current user endpoints (/me, /me/policies, /me/sessions)
+│   │   ├── Notes/                          # Notes endpoints & DTOs
+│   │   ├── Persistence/                    # EF Core 10 AppDbContext, Entities, Migrations
+│   │   ├── Security/                       # ES256 keys, JWT factory, sessions, TOTP, authorization
 │   │   ├── Seeding/                        # Idempotent database seeder (admin, support, user)
 │   │   └── Program.cs                      # Host configuration & security pipeline
 │   └── tests/
@@ -302,12 +303,12 @@ IdentityFullstack/
 ├── web/                                    # Nuxt 4 + Nuxt UI v4 Frontend & BFF
 │   ├── app/
 │   │   ├── components/                     # Reusable UI widgets (QR code generator, modals, dialogs)
-│   │   ├── composables/                    # useAuth, useBff, usePolicies, useCsrf
+│   │   ├── composables/                    # useAuth, useBff, useCapabilities, useCsrf
 │   │   ├── layouts/                        # auth.vue, default.vue (User panel), admin.vue (Admin console)
 │   │   ├── middleware/                     # auth.global.ts (route guards & forced MFA redirects)
 │   │   └── pages/
-│   │       ├── auth/                       # login, register, verify-email, forgot-password, mfa-enroll
-│   │       ├── app/                        # User Panel: notes CRUD, profile, sessions, security
+│   │       ├── 403.vue, confirm-email.vue, forgot-password.vue, index.vue, login.vue, register.vue
+│   │       ├── app/                        # User Panel: notes CRUD, profile, security
 │   │       └── admin/                      # Admin Console: user list, audit logs, note moderation
 │   ├── server/                             # Nitro BFF Engine
 │   │   ├── api/auth/                       # BFF auth handlers (login, register, logout, session)
@@ -365,11 +366,11 @@ The frontend starts listening on `http://localhost:3000`.
 ### Step 5: Testing Core User & Security Flows
 
 #### Flow 1: Registration with Anti-Leakage Email Verification
-1. Navigate to `http://localhost:3000/auth/register`.
+1. Navigate to `http://localhost:3000/register`.
 2. Register a new user (`newuser@example.com`).
 3. Open the **Mailpit Web UI** at `http://localhost:8025`.
 4. Open the confirmation email and click the link:
-   `http://localhost:3000/auth/verify-email#token=...&userId=...`
+   `http://localhost:3000/confirm-email#userId=...&token=...`
 5. The client router parses the token from the URL hash fragment and verifies the account.
 
 #### Flow 2: Standard User Panel
@@ -378,7 +379,7 @@ The frontend starts listening on `http://localhost:3000`.
 3. The Admin Console is hidden because the caller lacks admin policies.
 
 #### Flow 3: TOTP 2FA Enrollment
-1. Go to `/app/settings/security`.
+1. Go to `/app/security`.
 2. Click **Enable 2FA**, scan the QR code in Google Authenticator or 1Password, and enter the 6-digit verification code.
 3. Securely record the 10 emergency recovery codes.
 4. Log out and log back in to verify the 2FA challenge gate.
@@ -387,15 +388,15 @@ The frontend starts listening on `http://localhost:3000`.
 1. Log in with `admin@identity.local` / `Password123!`.
 2. Attempt to navigate to `/admin`.
 3. The server policy `panel.admin` evaluates that the user has admin permissions but lacks an active MFA claim (`amr: mfa`).
-4. Nuxt's global route guard intercepts and redirects to `/auth/mfa-enroll?required_mfa=1`.
+4. Nuxt's global route guard intercepts and redirects to `/app/security?required_mfa=1`.
 5. Once enrolled, the admin console unlocks, granting access to the User Directory, Audit Log, and Notes Moderation.
 
 #### Flow 5: Active Device Session Revocation
 1. Open an Incognito window and log into `http://localhost:3000`.
-2. Go to `/app/settings/sessions`.
-3. View both concurrent sessions, each showing client IP, browser details, and active status.
+2. Go to `/app/profile`.
+3. View active device sessions, each showing client IP, browser details, and active status.
 4. Click **Revoke** on the first session.
-5. In the first window, refresh the page: the session is immediately invalidated, returning the user to `/auth/login`.
+5. In the first window, refresh the page: the session is immediately invalidated, returning the user to `/login`.
 
 ---
 

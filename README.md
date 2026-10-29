@@ -204,6 +204,7 @@ npx playwright test --config e2e/playwright.config.ts
 
 ## Documentation & Architecture Deep Dives
 
+- **[First-Principles Architecture & Operator Guide](docs/README.md)**: Zero-trust concepts, BFF pattern mechanics, ASP.NET Core Identity internals, and user manual.
 - **[STRIDE Threat Model](docs/security/threat-model.md)**: Trust boundaries, attack trees, and mitigation strategies.
 - **[Token Lifecycle & Cryptography](docs/security/token-lifecycle.md)**: ES256 key rollover, JWKS, sliding rotation, and reuse detection.
 - **[Authorization Matrix](docs/security/authorization-matrix.md)**: Comprehensive mapping of permissions, roles, policies, and requirements.
