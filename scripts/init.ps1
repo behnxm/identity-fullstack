@@ -1,7 +1,8 @@
 # PowerShell Local Environment Initializer for Identity Fullstack
 $ErrorActionPreference = "Stop"
 
-$repoRoot = Resolve-Path (Join-Path $PSScriptRoot "..")
+$scriptDir = if ($PSScriptRoot) { $PSScriptRoot } else { (Get-Location).Path }
+$repoRoot = (Resolve-Path (Join-Path $scriptDir "..")).Path
 $secretsDir = Join-Path $repoRoot "secrets"
 $envFile = Join-Path $repoRoot ".env"
 $envExample = Join-Path $repoRoot ".env.example"
@@ -13,14 +14,22 @@ if (-not (Test-Path $secretsDir)) {
     New-Item -ItemType Directory -Path $secretsDir | Out-Null
 }
 
-# 2. Generate ES256 ECDSA P-256 private key if not already existing
+# 2. Generate ES256 ECDSA P-256 key pair if not already existing
 $keyFile = Join-Path $secretsDir "signing-key.pem"
+$pubKeyFile = Join-Path $secretsDir "public-key.pem"
+
 if (-not (Test-Path $keyFile)) {
     Write-Host "==> Generating ES256 (P-256) ECDSA signing key via .NET Cryptography..." -ForegroundColor Yellow
-    $ecdsa = [System.Security.Cryptography.ECDsa]::Create([System.Security.Cryptography.ECCurve]::NamedCurves::nistP256)
+    $curve = [System.Security.Cryptography.ECCurve+NamedCurves]::nistP256
+    $ecdsa = [System.Security.Cryptography.ECDsa]::Create($curve)
+    
     $keyPem = $ecdsa.ExportECPrivateKeyPem()
     Set-Content -Path $keyFile -Value $keyPem -Encoding Ascii
     Write-Host "==> Saved private key to secrets/signing-key.pem" -ForegroundColor Green
+
+    $pubKeyPem = $ecdsa.ExportSubjectPublicKeyInfoPem()
+    Set-Content -Path $pubKeyFile -Value $pubKeyPem -Encoding Ascii
+    Write-Host "==> Saved public key to secrets/public-key.pem" -ForegroundColor Green
 } else {
     Write-Host "==> Signing key already exists at secrets/signing-key.pem" -ForegroundColor Gray
 }
@@ -53,4 +62,13 @@ if (-not (Test-Path $envFile)) {
     Write-Host "==> Using existing .env file." -ForegroundColor Gray
 }
 
-Write-Host "`nEnvironment initialization complete." -ForegroundColor Green
+Write-Host ""
+Write-Host "=================================================================" -ForegroundColor Cyan
+Write-Host "                  DEMO CREDENTIALS & QUICK START                 " -ForegroundColor Cyan
+Write-Host "=================================================================" -ForegroundColor Cyan
+Write-Host "  Admin Account:   admin@identity.local" -ForegroundColor White
+Write-Host "  Support Account: support@identity.local" -ForegroundColor White
+Write-Host "  User Account:    user@identity.local" -ForegroundColor White
+Write-Host "  Password:        Password123!" -ForegroundColor White
+Write-Host "=================================================================" -ForegroundColor Cyan
+Write-Host "Environment initialization complete." -ForegroundColor Green
