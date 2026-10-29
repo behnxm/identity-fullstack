@@ -55,7 +55,7 @@ test.describe('End-to-End Authentication & Email Lifecycle', () => {
     // 6. Navigate to login page
     await page.goto('/login')
     await page.locator('#email').fill('user@identity.local')
-    await page.locator('#password').fill('Password123!')
+    await page.locator('#password').fill('Password!12345678')
     await page.getByRole('button', { name: /sign in/i }).click()
 
     // 7. Verify authenticated landing in User Panel (/app)

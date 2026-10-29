@@ -5,7 +5,7 @@ test.describe('Resource-Based Authorization: Personal Notes', () => {
     // 1. Log in
     await page.goto('/login')
     await page.locator('#email').fill('user@identity.local')
-    await page.locator('#password').fill('Password123!')
+    await page.locator('#password').fill('Password!12345678')
     await page.getByRole('button', { name: /sign in/i }).click()
     await expect(page).toHaveURL(/.*\/app/)
 

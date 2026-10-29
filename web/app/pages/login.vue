@@ -50,7 +50,7 @@ const handleLogin = async () => {
 
 const prefill = (demoEmail: string) => {
   email.value = demoEmail
-  password.value = 'Password123!'
+  password.value = 'Password!12345678'
 }
 </script>
 
@@ -137,7 +137,7 @@ const prefill = (demoEmail: string) => {
     <!-- Quick Demo Prefill -->
     <div class="mt-8 pt-6 border-t border-neutral-200 dark:border-neutral-800">
       <div class="text-[11px] font-semibold text-neutral-400 uppercase tracking-wider mb-2.5 text-center">
-        Demo Credentials (Password: Password123!)
+        Demo Credentials (Password: Password!12345678)
       </div>
       <div class="grid grid-cols-3 gap-2">
         <button

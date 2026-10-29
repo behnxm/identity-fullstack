@@ -5,7 +5,7 @@ test.describe('Policy-Based Panel Authorization & Route Protection', () => {
     // 1. Log in as standard user
     await page.goto('/login')
     await page.locator('#email').fill('user@identity.local')
-    await page.locator('#password').fill('Password123!')
+    await page.locator('#password').fill('Password!12345678')
     await page.getByRole('button', { name: /sign in/i }).click()
 
     await expect(page).toHaveURL(/.*\/app/)
@@ -27,7 +27,7 @@ test.describe('Policy-Based Panel Authorization & Route Protection', () => {
     // 1. Log in as support user
     await page.goto('/login')
     await page.locator('#email').fill('support@identity.local')
-    await page.locator('#password').fill('Password123!')
+    await page.locator('#password').fill('Password!12345678')
     await page.getByRole('button', { name: /sign in/i }).click()
 
     // If Support has MFA enrolled, they land on /admin; otherwise user panel

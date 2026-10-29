@@ -157,7 +157,7 @@ npm run dev --prefix web
 
 ## Seeded Demo Personas
 
-All seeded accounts share the initial development password: `Password123!`
+All seeded accounts share the initial development password: `Password!12345678`
 
 | Persona | Email | Assigned Role | Capabilities | Landing Route |
 |---|---|---|---|---|

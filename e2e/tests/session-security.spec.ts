@@ -5,7 +5,7 @@ test.describe('Session Security & Rotating Refresh Token Management', () => {
     // 1. Log in
     await page.goto('/login')
     await page.locator('#email').fill('user@identity.local')
-    await page.locator('#password').fill('Password123!')
+    await page.locator('#password').fill('Password!12345678')
     await page.getByRole('button', { name: /sign in/i }).click()
     await expect(page).toHaveURL(/.*\/app/)
 
@@ -17,7 +17,7 @@ test.describe('Session Security & Rotating Refresh Token Management', () => {
     await expect(page.getByText('Current Device')).toBeVisible()
 
     // 4. Verify password change form validation
-    await page.locator('#currentPassword').fill('Password123!')
+    await page.locator('#currentPassword').fill('Password!12345678')
     await page.locator('#newSecPassword').fill('Short')
     await page.locator('#confirmSecPassword').fill('Short')
     await page.getByRole('button', { name: /update password/i }).click()

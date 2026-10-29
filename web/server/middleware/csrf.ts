@@ -15,6 +15,23 @@ export default defineEventHandler((event) => {
     return
   }
 
+  // Exempt nuxt-auth-utils internal session endpoints (/api/_auth/*) from custom header requirement
+  if (path.startsWith('/api/_auth/')) {
+    const secFetchSite = getRequestHeader(event, 'sec-fetch-site')
+    if (secFetchSite === 'cross-site') {
+      throw createError({
+        statusCode: 403,
+        statusMessage: 'Forbidden',
+        data: {
+          code: 'csrf.rejected',
+          title: 'CSRF Rejected',
+          detail: 'Cross-site requests to session endpoints are strictly prohibited.'
+        }
+      })
+    }
+    return
+  }
+
   // 1. Fetch Metadata check (Browsers supporting Sec-Fetch-Site)
   const secFetchSite = getRequestHeader(event, 'sec-fetch-site')
   if (secFetchSite && (secFetchSite === 'cross-site' || secFetchSite === 'none')) {

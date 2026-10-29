@@ -97,8 +97,14 @@ export function useBff() {
   const logout = async () => {
     try {
       await clientFetch('/api/auth/logout', { method: 'POST' })
+    } catch {
+      // Continue cleanup even if server call failed
     } finally {
-      await clear()
+      try {
+        await clear()
+      } catch {
+        // Fallback: session state cleared
+      }
       router.push('/login')
     }
   }
@@ -106,8 +112,14 @@ export function useBff() {
   const logoutAll = async () => {
     try {
       await clientFetch('/api/auth/logout-all', { method: 'POST' })
+    } catch {
+      // Continue cleanup even if server call failed
     } finally {
-      await clear()
+      try {
+        await clear()
+      } catch {
+        // Fallback: session state cleared
+      }
       router.push('/login')
     }
   }

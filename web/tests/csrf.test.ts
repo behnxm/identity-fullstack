@@ -46,6 +46,36 @@ describe('CSRF Middleware', () => {
     expect(() => csrfMiddleware(pageEvent)).not.toThrow()
   })
 
+  it('allows nuxt-auth-utils internal DELETE /api/_auth/session without custom headers', () => {
+    const sessionEvent = createMockEvent({
+      method: 'DELETE',
+      path: '/api/_auth/session',
+      headers: {
+        host: 'localhost:3000',
+        'sec-fetch-site': 'same-origin'
+      }
+    })
+    expect(() => csrfMiddleware(sessionEvent)).not.toThrow()
+  })
+
+  it('rejects nuxt-auth-utils internal /api/_auth/session if Sec-Fetch-Site is cross-site', () => {
+    const sessionEvent = createMockEvent({
+      method: 'DELETE',
+      path: '/api/_auth/session',
+      headers: {
+        host: 'localhost:3000',
+        'sec-fetch-site': 'cross-site'
+      }
+    })
+    try {
+      csrfMiddleware(sessionEvent)
+      expect.unreachable('Should have thrown 403')
+    } catch (err: any) {
+      expect(err.statusCode).toBe(403)
+      expect(err.data.code).toBe('csrf.rejected')
+    }
+  })
+
   it('rejects POST requests missing X-Requested-With header', () => {
     const event = createMockEvent({
       method: 'POST',
