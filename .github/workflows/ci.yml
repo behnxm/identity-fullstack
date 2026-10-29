@@ -57,7 +57,7 @@ jobs:
           ConnectionStrings__DefaultConnection: Host=127.0.0.1;Port=5432;Database=identity_test;Username=identity_app;Password=test_password_123!
           Email__SmtpHost: 127.0.0.1
           Email__SmtpPort: 1025
-        run: dotnet test api/Identity.slnx --configuration Release --no-build --logger "console;verbosity=normal"
+        run: dotnet test api/Identity.slnx --configuration Release --no-build --output Normal
 
   web-tests:
     name: Nuxt 4 BFF Typecheck & Unit Tests

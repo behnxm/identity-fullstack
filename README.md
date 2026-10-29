@@ -169,9 +169,9 @@ All seeded accounts share the initial development password: `Password!12345678`
 
 ## Verification & Automated Test Suites
 
-### 1. .NET 10 Test Suite (73/73 Passing)
+### 1. .NET 10 Test Suite (74/74 Passing)
 ```bash
-dotnet test api/Identity.slnx --logger "console;verbosity=normal"
+dotnet test api/Identity.slnx
 ```
 - **`Identity.UnitTests` (32 tests)**: Token generation, ECDSA P-256 signing, TOTP verification, password validation, rate limiting, and result handlers.
 - **`Identity.ArchitectureTests` (3 tests)**: Automated NetArchTest enforcing that `[Authorize(Roles = ...)]` is never used and boundary layers are respected.
