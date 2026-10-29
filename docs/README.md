@@ -330,12 +330,66 @@ IdentityFullstack/
 
 ---
 
-## 9. Operator & Developer Manual
+## 9. Developer Workflows: Hybrid Local vs. All-in-Docker
+
+I designed this repository to support two deliberate execution modes, each optimized for a specific phase of the engineering lifecycle:
+
+```mermaid
+flowchart LR
+    subgraph Mode1["Mode 1: Hybrid Local (Daily Inner Loop)"]
+        direction TB
+        HostCode["Host Machine<br/>• Nuxt 4 (npm run dev :3000)<br/>• .NET 10 (dotnet run :5000)"]
+        DockerBacking["Docker Containers<br/>• PostgreSQL 17 (:5432)<br/>• Mailpit SMTP (:1025 / :8025)"]
+        HostCode <-->|"Sub-100ms HMR & Breakpoint Debugging"| DockerBacking
+    end
+
+    subgraph Mode2["Mode 2: All-in-Docker (Showcase & Release Parity)"]
+        direction TB
+        FullStack["Single Command:<br/>docker compose up -d<br/>• Web BFF (:3000)<br/>• .NET 10 API (Chiseled Noble)<br/>• PostgreSQL 17<br/>• Mailpit SMTP<br/>• Caddy TLS Reverse Proxy"]
+    end
+```
+
+### Architectural Rationale & Tradeoff Analysis
+
+#### Mode 1: Hybrid Local (Recommended for Daily Feature Engineering)
+In my daily development loop, I run backing infrastructure (PostgreSQL and Mailpit) inside Docker containers, while executing the application runtimes (ASP.NET Core 10 and Nuxt 4) directly on the host machine.
+
+* **Sub-100ms Hot Module Replacement (HMR)**:
+  Nuxt (Vite) and .NET 10 (`dotnet watch`) listen directly to native operating system filesystem notifications (`ReadDirectoryChangesW` on Windows, `Inotify` on Linux). Mounting application source code into Docker containers on Windows or macOS introduces virtualization filesystem translation overhead (WSL2 9P or gRPC-FUSE), which often causes high CPU polling spikes, delayed file synchronization, or dropped HMR events. Running runtimes natively on the host guarantees sub-100 millisecond reload times.
+* **First-Class IDE Debugging**:
+  Setting breakpoints, inspecting memory heaps, and stepping through execution in Visual Studio, JetBrains Rider, VS Code, or browser DevTools attaches instantly to native processes (`localhost:5000` and `localhost:3000`). Debugging inside containerized environments—especially our production containers which run chiseled distroless images with no shell, no package manager, and a non-root UID—requires injecting external debuggers (`vsdbg`), punching extra debug ports, and compromising container security profiles.
+* **Zero Host OS Pollution**:
+  Backing services remain isolated. I never install PostgreSQL server daemons or SMTP utilities into my host operating system. The database is pinned to an exact version (`postgres:17.11-alpine`) and can be completely purged or recreated with `docker compose down -v`.
+
+#### Mode 2: All-in-Docker (Showcase, CI & Release Verification)
+For technical interview evaluation, CI pipelines, and production release verification, I provide the ability to spin up the entire system with zero local SDK dependencies via `docker compose up -d`.
+
+* **Zero-Prerequisite Onboarding**:
+  Anyone reviewing or evaluating this repository (such as hiring teams or security auditors) does not need the .NET 10 SDK or Node.js 22 installed on their machine. A single command boots the entire architecture.
+* **Production Parity (Twelve-Factor App)**:
+  This mode exercises the real production artifacts: multi-stage Docker builds, read-only root filesystems, non-root `app` user isolation (`aspnet:10.0-noble-chiseled`), internal bridge networks, and the Caddy edge TLS reverse proxy.
+* **Hermetic CI & Security Testing**:
+  In GitHub Actions and automated Playwright E2E suites, running all containers ensures tests execute in an immutable, reproducible environment identical to production.
+
+### Workflow Comparison Matrix
+
+| Dimension | Mode 1: Hybrid Local | Mode 2: All-in-Docker |
+|---|---|---|
+| **Primary Use Case** | Daily active coding, UI refinement, debugging | Showcase, code review, CI/CD, production verification |
+| **Start Command** | `docker compose up -d postgres mailpit` | `docker compose up -d` |
+| **Host Prerequisites** | .NET 10 SDK, Node.js 22 LTS, Docker | Docker Engine / Docker Desktop only |
+| **Hot Reload Speed** | Instant (<100ms via native OS filesystem events) | Container rebuild / restart required on change |
+| **IDE Debugging** | Native 1-click F5 breakpoints | Requires remote debugging plumbing |
+| **Production Parity** | High (identical backing engines & configurations) | Complete (identical containers, chiseled images & edge proxies) |
+
+---
+
+## 10. Operator & Developer Manual
 
 ### Prerequisites
-* [.NET 10 SDK](https://dotnet.microsoft.com/)
-* [Node.js 22 LTS](https://nodejs.org/)
-* PostgreSQL 17 & Mailpit (via Docker or local services)
+* [.NET 10 SDK](https://dotnet.microsoft.com/) (for Mode 1)
+* [Node.js 22 LTS](https://nodejs.org/) (for Mode 1)
+* [Docker Desktop](https://www.docker.com/) or Docker Engine (for both Mode 1 and Mode 2)
 
 ### Step 1: Environment Initialization
 Run the initialization script from the project root:
@@ -344,24 +398,50 @@ Run the initialization script from the project root:
 ```
 This generates the private ES256 key (`secrets/signing-key.pem`), public key (`secrets/public-key.pem`), and the `.env` configuration file with a cryptographically secure session password.
 
-### Step 2: Database & Mail Infrastructure
+---
+
+### Running via Mode 1: Hybrid Local (Recommended for Development)
+
+#### 1. Start Backing Infrastructure
 Start PostgreSQL (port 5432) and Mailpit (SMTP port 1025, Web UI port 8025):
 ```powershell
 docker compose up -d postgres mailpit
 ```
 *(If running under WSL2 Debian without Docker, start services via `service postgresql start && service mailpit start`)*.
 
-### Step 3: Run the Backend API
+#### 2. Run the Backend API
+In a new terminal:
 ```powershell
 dotnet run --project api/src/Identity.Api
 ```
 The API automatically applies database migrations, seeds the default roles and user accounts, and starts listening on `http://localhost:5000`.
 
-### Step 4: Run the Nuxt 4 Frontend
+#### 3. Run the Nuxt 4 Frontend
+In a second terminal:
 ```powershell
 npm run dev --prefix web
 ```
 The frontend starts listening on `http://localhost:3000`.
+
+---
+
+### Running via Mode 2: All-in-Docker (Zero-Prerequisite Showcase)
+
+To spin up the entire containerized topology (PostgreSQL, Mailpit, API, Web BFF, and Caddy) with a single command:
+```powershell
+docker compose up -d
+```
+All services are built, networked, and started automatically:
+* **Web Application**: `http://localhost:3000`
+* **Mailpit Web UI**: `http://localhost:8025`
+* **PostgreSQL**: Internal to container network (and mapped to `127.0.0.1:5432` for inspection)
+
+To shut down and wipe the environment:
+```powershell
+docker compose down -v
+```
+
+---
 
 ### Step 5: Testing Core User & Security Flows
 
@@ -400,7 +480,7 @@ The frontend starts listening on `http://localhost:3000`.
 
 ---
 
-## 10. Automated Verification Commands
+## 11. Automated Verification Commands
 
 All test suites and static checks can be executed locally:
 
