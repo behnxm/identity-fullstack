@@ -67,7 +67,7 @@ public sealed class CapturingLogProvider : ILoggerProvider, ILogger
 public class CustomWebApplicationFactory : WebApplicationFactory<Program>, IAsyncLifetime
 {
     private PostgreSqlContainer? _postgresContainer;
-    private string _connectionString = "Host=127.0.0.1;Port=5432;Database=identity_test;Username=postgres;Password=postgres;";
+    private string _connectionString = "Host=127.0.0.1;Port=5432;Database=identity_test;Username=postgres;Password=postgres;Ssl Mode=Disable;";
 
     public FakeTimeProvider TimeProvider { get; } = new(DateTimeOffset.UtcNow);
     public CapturingEmailSender EmailSender { get; } = new();
@@ -93,7 +93,7 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>, IAsyn
             catch
             {
                 // Fall back to local PostgreSQL if Docker is not active
-                _connectionString = "Host=127.0.0.1;Port=5432;Database=identity_test;Username=postgres;Password=postgres;";
+                _connectionString = "Host=127.0.0.1;Port=5432;Database=identity_test;Username=postgres;Password=postgres;Ssl Mode=Disable;";
             }
         }
 
