@@ -3,15 +3,17 @@ services:
     image: postgres:17.11-alpine
     restart: unless-stopped
     environment:
-      POSTGRES_DB: identity
-      POSTGRES_USER: identity_app
-      POSTGRES_PASSWORD: ${DB_PASSWORD:-local_dev_db_password_123!}
+      POSTGRES_DB: ${DB_NAME:-identity_dev}
+      POSTGRES_USER: ${DB_USER:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-postgres}
+    ports:
+      - "127.0.0.1:5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     networks:
       - internal-net
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U identity_app -d identity"]
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-postgres} -d ${DB_NAME:-identity_dev}"]
       interval: 5s
       timeout: 5s
       retries: 5
@@ -23,6 +25,7 @@ services:
     restart: unless-stopped
     ports:
       - "127.0.0.1:8025:8025"
+      - "127.0.0.1:1025:1025"
     networks:
       - internal-net
     security_opt:
@@ -39,12 +42,12 @@ services:
       mailpit:
         condition: service_started
     environment:
-      ConnectionStrings__DefaultConnection: Host=postgres;Port=5432;Database=identity;Username=identity_app;Password=${DB_PASSWORD:-local_dev_db_password_123!}
-      Email__SmtpHost: mailpit
-      Email__SmtpPort: 1025
-      Jwt__Issuer: https://identity.local/api
+      ConnectionStrings__Database: Host=postgres;Port=5432;Database=${DB_NAME:-identity_dev};Username=${DB_USER:-postgres};Password=${DB_PASSWORD:-postgres};Ssl Mode=Disable;
+      Smtp__Host: mailpit
+      Smtp__Port: 1025
+      Jwt__Issuer: https://identity.local
       Jwt__Audience: https://identity.local/api
-      Jwt__KeyDirectory: /app/secrets
+      Jwt__SigningKeyPath: /app/secrets/signing-key.pem
       Web__SiteUrl: http://localhost:3000
       Security__BffNetwork: 172.16.0.0/12
     volumes:

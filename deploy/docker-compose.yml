@@ -1,0 +1,113 @@
+# Identity Fullstack - Deployment Docker Compose
+# Standard production topology with isolated internal network, Postgres, Mailpit, API, Web BFF, and Caddy TLS reverse proxy.
+
+services:
+  postgres:
+    image: postgres:17.11-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${DB_NAME:-identity_dev}
+      POSTGRES_USER: ${DB_USER:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-postgres}
+    ports:
+      - "127.0.0.1:5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - internal-net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-postgres} -d ${DB_NAME:-identity_dev}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    security_opt:
+      - no-new-privileges:true
+
+  mailpit:
+    image: axllent/mailpit:v1.32.0
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:8025:8025"
+      - "127.0.0.1:1025:1025"
+    networks:
+      - internal-net
+    security_opt:
+      - no-new-privileges:true
+
+  api:
+    build:
+      context: ../api
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      mailpit:
+        condition: service_started
+    environment:
+      ConnectionStrings__Database: Host=postgres;Port=5432;Database=${DB_NAME:-identity_dev};Username=${DB_USER:-postgres};Password=${DB_PASSWORD:-postgres};Ssl Mode=Disable;
+      Smtp__Host: mailpit
+      Smtp__Port: 1025
+      Jwt__Issuer: https://identity.local
+      Jwt__Audience: https://identity.local/api
+      Jwt__SigningKeyPath: /app/secrets/signing-key.pem
+      Web__SiteUrl: http://localhost:3000
+      Security__BffNetwork: 172.16.0.0/12
+    volumes:
+      - ../secrets:/app/secrets:ro
+    networks:
+      - internal-net
+    security_opt:
+      - no-new-privileges:true
+    read_only: true
+    tmpfs:
+      - /tmp
+
+  web:
+    build:
+      context: ../web
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    depends_on:
+      - api
+    environment:
+      API_BASE_URL: http://api:8080
+      NUXT_SESSION_PASSWORD: ${NUXT_SESSION_PASSWORD:-32_character_minimum_dev_secret_key_pass!!}
+      PORT: 3000
+      HOST: 0.0.0.0
+    ports:
+      - "127.0.0.1:3000:3000"
+    networks:
+      - internal-net
+      - public-net
+    security_opt:
+      - no-new-privileges:true
+
+  caddy:
+    image: caddy:2.11.7-alpine
+    profiles:
+      - tls
+    restart: unless-stopped
+    depends_on:
+      - web
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    networks:
+      - public-net
+    security_opt:
+      - no-new-privileges:true
+
+networks:
+  internal-net:
+    internal: true
+  public-net:
+
+volumes:
+  postgres_data:
+  caddy_data:
+  caddy_config:

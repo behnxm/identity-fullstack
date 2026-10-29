@@ -347,9 +347,9 @@ This generates the private ES256 key (`secrets/signing-key.pem`), public key (`s
 ### Step 2: Database & Mail Infrastructure
 Start PostgreSQL (port 5432) and Mailpit (SMTP port 1025, Web UI port 8025):
 ```powershell
-docker compose -f deploy/docker-compose.yml up -d db mailpit
+docker compose up -d postgres mailpit
 ```
-*(If running under WSL2 Debian without Docker, start services via `service postgresql start && service mailpit start`)*.
+*(Alternatively, you can run `docker compose -f deploy/docker-compose.yml up -d postgres mailpit`, or if running under WSL2 Debian without Docker, start services via `service postgresql start && service mailpit start`)*.
 
 ### Step 3: Run the Backend API
 ```powershell
