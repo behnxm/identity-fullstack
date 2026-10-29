@@ -374,7 +374,7 @@ The frontend starts listening on `http://localhost:3000`.
 5. The client router parses the token from the URL hash fragment and verifies the account.
 
 #### Flow 2: Standard User Panel
-1. Log in with `user@identity.local` / `Password123!`.
+1. Log in with `user@identity.local` (or `user@demo.test`) / `Password!12345678`.
 2. Notice the panel lands at `/app`. You can manage personal notes and profile details.
 3. The Admin Console is hidden because the caller lacks admin policies.
 
@@ -385,7 +385,7 @@ The frontend starts listening on `http://localhost:3000`.
 4. Log out and log back in to verify the 2FA challenge gate.
 
 #### Flow 4: Forced MFA Admin Access
-1. Log in with `admin@identity.local` / `Password123!`.
+1. Log in with `admin@identity.local` (or `admin@demo.test`) / `Password!12345678`.
 2. Attempt to navigate to `/admin`.
 3. The server policy `panel.admin` evaluates that the user has admin permissions but lacks an active MFA claim (`amr: mfa`).
 4. Nuxt's global route guard intercepts and redirects to `/app/security?required_mfa=1`.

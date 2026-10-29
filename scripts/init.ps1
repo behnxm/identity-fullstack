@@ -66,9 +66,9 @@ Write-Host ""
 Write-Host "=================================================================" -ForegroundColor Cyan
 Write-Host "                  DEMO CREDENTIALS & QUICK START                 " -ForegroundColor Cyan
 Write-Host "=================================================================" -ForegroundColor Cyan
-Write-Host "  Admin Account:   admin@identity.local" -ForegroundColor White
-Write-Host "  Support Account: support@identity.local" -ForegroundColor White
-Write-Host "  User Account:    user@identity.local" -ForegroundColor White
-Write-Host "  Password:        Password123!" -ForegroundColor White
+Write-Host "  Admin Account:   admin@identity.local (or admin@demo.test)" -ForegroundColor White
+Write-Host "  Support Account: support@identity.local (or support@demo.test)" -ForegroundColor White
+Write-Host "  User Account:    user@identity.local (or user@demo.test)" -ForegroundColor White
+Write-Host "  Password:        Password!12345678" -ForegroundColor White
 Write-Host "=================================================================" -ForegroundColor Cyan
 Write-Host "Environment initialization complete." -ForegroundColor Green

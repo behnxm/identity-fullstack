@@ -101,7 +101,6 @@ services:
 
 networks:
   internal-net:
-    internal: true
   public-net:
 
 volumes:

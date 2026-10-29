@@ -90,7 +90,10 @@ public sealed class DatabaseSeeder(
         {
             ("user@demo.test", "Demo User", Roles.User),
             ("support@demo.test", "Demo Support", Roles.Support),
-            ("admin@demo.test", "Demo Admin", Roles.Admin)
+            ("admin@demo.test", "Demo Admin", Roles.Admin),
+            ("user@identity.local", "Local User", Roles.User),
+            ("support@identity.local", "Local Support", Roles.Support),
+            ("admin@identity.local", "Local Admin", Roles.Admin)
         };
 
         foreach (var (email, name, role) in demoUsers)
