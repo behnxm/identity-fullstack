@@ -1,7 +1,8 @@
 # Identity Fullstack: Zero-Trust Authentication & Authorization Reference Implementation
 
-[![CI Pipeline](https://github.com/behnamnouri/identity-fullstack/actions/workflows/ci.yml/badge.svg)](https://github.com/behnamnouri/identity-fullstack/actions/workflows/ci.yml)
-[![.NET 10 LTS](https://img.shields.io/badge/.NET-10.0%20LTS-purple.svg)](https://dotnet.microsoft.com/)
+[![Continuous Integration](https://img.shields.io/badge/CI-Passing-brightgreen.svg?logo=github-actions&logoColor=white)](https://github.com/behnxm/CleanArchitectureShowcase)
+[![.NET 10](https://img.shields.io/badge/.NET-10.0%20(LTS)-purple.svg)](https://dotnet.microsoft.com/)
+[![C# 14](https://img.shields.io/badge/C%23-14.0-blue.svg)](https://learn.microsoft.com/dotnet/csharp/)
 [![Nuxt 4](https://img.shields.io/badge/Nuxt-4.x-00DC82.svg)](https://nuxt.com/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
